@@ -16,7 +16,7 @@ type Params = {
   onPosting?: () => void
   onBroadcasting?: (txHash: string) => void
   onSuccess?: (txHash: string, txInfo?: TxInfo) => void
-  onError?: (txHash?: string, txInfo?: TxInfo) => void
+  onError?: (errorMessage?: string, originalError?: unknown) => void
 }
 
 export const useTx = ({
@@ -40,25 +40,25 @@ export const useTx = ({
         onPosting?.()
       },
       onError: (e: unknown) => {
-        let error = `Unknown Error: ${
+        let message = `Unknown Error: ${
           e instanceof Error ? e.message : String(e)
         }`
 
         if (e instanceof UserDenied) {
-          error = 'User Denied'
+          message = 'User Denied'
         } else if (e instanceof CreateTxFailed) {
-          error = `Create Tx Failed: ${e.message}`
+          message = `Create Tx Failed: ${e.message}`
         } else if (e instanceof TxFailed) {
-          error = `Tx Failed: ${e.message}`
+          message = `Tx Failed: ${e.message}`
         } else if (e instanceof Timeout) {
-          error = 'Timeout'
+          message = 'Timeout'
         } else if (e instanceof TxUnspecifiedError) {
-          error = `Unspecified Error: ${e.message}`
+          message = `Unspecified Error: ${e.message}`
         } else {
-          error = `Unknown Error: ${e instanceof Error ? e.message : String(e)}`
+          message = `Unknown Error: ${e instanceof Error ? e.message : String(e)}`
         }
 
-        onError?.(error)
+        onError?.(message, e)
       },
       onSuccess: res => {
         setTxHash(res.result.txhash)
